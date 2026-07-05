@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Exactly three user profile docs, doc ID == Firebase Auth UID.
+    // Created via the Firebase console / Admin SDK, not from the client.
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow update: if isOwner(userId)
+        // profile owners may only touch their own display fields, never re-assign the doc
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'colorTag']);
+      allow create, delete: if false; // provisioned out-of-band
+    }
+
+    match /habits/{habitId} {
+      // All three signed-in users can read every habit — this is what powers the group board.
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.commitmentDays is int
+        && request.resource.data.commitmentDays >= 1
+        && request.resource.data.commitmentDays <= 90
+        && request.resource.data.checkIns == {};
+
+      allow delete: if isOwner(resource.data.ownerId);
+
+      allow update: if isOwner(resource.data.ownerId)
+        && request.resource.data.ownerId == resource.data.ownerId // ownerId is immutable
+        && request.resource.data.startDate == resource.data.startDate // startDate is immutable
+        && request.resource.data.commitmentDays is int
+        && request.resource.data.commitmentDays >= 1
+        && request.resource.data.commitmentDays <= 90;
+    }
+  }
+}

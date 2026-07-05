@@ -1,0 +1,35 @@
+mutation CreateHabit($title: String!, $frequency: String!, $description: String) @auth(level: USER) {
+  habit_insert(data: {
+    title: $title,
+    frequency: $frequency,
+    description: $description,
+    user: { id_expr: "auth.uid" },
+    createdAt_expr: "request.time"
+  })
+}
+
+mutation CreateHabitEntry($habitId: UUID!, $date: Date!) @auth(level: USER) {
+  habitEntry_insert(data: {
+    habit: { id: $habitId },
+    date: $date,
+    completedAt_expr: "request.time"
+  })
+}
+
+query ListUserHabits @auth(level: USER) {
+  habits(where: { userId: { eq_expr: "auth.uid" } }) {
+    id
+    title
+    frequency
+    category {
+      name
+    }
+  }
+}
+
+query GetHabitStreaks($habitId: UUID!) @auth(level: USER) {
+  streak(key: { id: $habitId }) {
+    currentStreakCount
+    lastCompletedDate
+  }
+}

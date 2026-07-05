@@ -1,0 +1,30 @@
+mutation SeedDatabase @transaction {
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      email: "alice@example.com",
+      createdAt: "2023-01-01T00:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      email: "bob@example.com",
+      createdAt: "2023-01-02T00:00:00Z"
+    }
+  ])
+  habit_insertMany(data: [
+    {
+      id: "a0e84000-e29b-41d4-a716-446655440000",
+      title: "Exercise",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      frequency: "daily",
+      createdAt: "2023-01-01T12:00:00Z"
+    },
+    {
+      id: "a0e84000-e29b-41d4-a716-446655440001",
+      title: "Read",
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      frequency: "weekly",
+      createdAt: "2023-01-02T12:00:00Z"
+    }
+  ])
+}
